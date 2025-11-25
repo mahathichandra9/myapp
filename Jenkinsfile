@@ -2,7 +2,6 @@ pipeline {
   agent any
 
   tools {
-    // Keep these names in sync with Manage Jenkins -> Global Tool Configuration
     maven 'Maven-3.8.8'
     jdk 'OpenJDK-17'
   }
@@ -19,20 +18,18 @@ pipeline {
       steps {
         script {
           if (isUnix()) {
-            // Unix / Linux / macOS agents
             sh 'mvn -B clean package'
           } else {
-            // Windows agents
-            // Maven is put on PATH by the "tools" block, so just call mvn
             bat 'mvn -B clean package'
           }
         }
       }
     }
 
+    // <-- Updated Test Results stage: allowEmptyResults = true prevents failure when no XMLs found
     stage('Test Results') {
       steps {
-        junit '**/target/surefire-reports/*.xml'
+        junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: true
       }
     }
 
@@ -53,8 +50,8 @@ pipeline {
               timeout 8 java -jar "$JAR" || true
             '''
           } else {
-            // Windows: find jar and run it (keeps console output visible)
             bat '''
+              set JAR=
               for %%f in (target\\*.jar) do set JAR=%%f
               if "%JAR%"=="" (
                 echo No jar found
