@@ -1,11 +1,11 @@
 package com.example.myapp;
 
-public class App {
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		System.out.println("Hello World!");
-
-	}
-
+public class AppTest {
+    @Test
+    public void sampleTest() {
+        assertTrue(true);
+    }
 }
