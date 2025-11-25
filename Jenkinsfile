@@ -4,27 +4,25 @@ pipeline {
 
   stages {
     stage('Build') {
-      steps {
-        script {
-          isUnix() ? sh('mvn -B clean package') : bat('mvn -B clean package')
-        }
-      }
+      steps { script { isUnix() ? sh('mvn -B clean package') : bat('mvn -B clean package') } }
     }
 
     stage('Test') {
-      steps { junit '**/target/surefire-reports/*.xml', allowEmptyResults: true }
+      steps { junit testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: true }
     }
 
     stage('Archive') {
-      steps { archiveArtifacts 'target/*.jar' }
+      steps { archiveArtifacts artifacts: 'target/*.jar' }
     }
 
     stage('Run') {
       steps {
         script {
-          isUnix()
-            ? sh('java -jar $(ls target/*.jar | head -n1) || true')
-            : bat('for %%f in (target\\*.jar) do (java -jar "%%f" || exit /b 0)')
+          if (isUnix()) {
+            sh 'java -jar $(ls target/*.jar | head -n1) || true'
+          } else {
+            bat 'for %%f in (target\\*.jar) do set JAR=%%f & java -jar "%JAR%" || exit /b 0'
+          }
         }
       }
     }
